@@ -213,18 +213,7 @@ async function run() {
         })).map(b => b.name);
       core.info(`💬 Found ${branchNames.length} branches`);
     }
-    // ---------------------- 5. Delete Orphan Runs ----------------------
-    const allRuns = await octokit.paginate(octokit.rest.actions.listWorkflowRunsForRepo, {
-      owner: repoOwner,
-      repo: repoName,
-      per_page: 100,
-    });
-    const orphanRuns = allRuns.filter(run => !workflowIds.includes(run.workflow_id));
-    if (orphanRuns.length > 0) {
-      core.info(`👻 Found ${orphanRuns.length} orphan runs`);
-      await deleteRuns(orphanRuns, "orphan runs", dryRun, octokit, repoOwner, repoName);
-    }
-    // ---------------------- 6. Filter Workflows ----------------------
+    // ---------------------- 5. Filter Workflows ----------------------
     let filteredWorkflows = workflows;
     if (deleteWorkflowPattern) {
       const patterns = splitPattern(deleteWorkflowPattern).map(p => p.toLowerCase());
@@ -249,6 +238,19 @@ async function run() {
       }) => states.includes(String(state ?? "").toLowerCase()));
     }
     core.info(`Processing ${filteredWorkflows.length} workflow(s)`);
+    // ---------------------- 6. Delete Orphan Runs ----------------------
+    const allRuns = await octokit.paginate(octokit.rest.actions.listWorkflowRunsForRepo, {
+      owner: repoOwner,
+      repo: repoName,
+      per_page: 100,
+    });
+    const orphanRuns = allRuns.filter(run => !workflowIds.includes(run.workflow_id));
+    if (orphanRuns.length > 0) {
+      core.startGroup(`Processing: orphan runs`);
+      core.info(`👻 Found ${orphanRuns.length} orphan runs`);
+      await deleteRuns(orphanRuns, "orphan runs", dryRun, octokit, repoOwner, repoName);
+      core.endGroup();
+    }
     // ---------------------- 7. Process Each Workflow ----------------------
     const allowedConclusions = deleteRunByConclusionPattern.toUpperCase() === "ALL" ? [] : splitPattern(deleteRunByConclusionPattern).map(c => c.toLowerCase());
     for (const workflow of filteredWorkflows) {
