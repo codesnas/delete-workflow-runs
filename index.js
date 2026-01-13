@@ -281,7 +281,7 @@ async function run() {
         runsToRetain = keepMinimumRuns > 0 ? candidates.slice(-keepMinimumRuns) : [];
         runsToDelete = keepMinimumRuns > 0 ? candidates.slice(0, candidates.length - runsToRetain.length) : candidates;
         if (runsToRetain.length > 0)
-          core.info(`🔄 Retaining latest ${runsToRetain.length} run(s)`);
+          core.info(`🔄 Retaining latest ${runsToRetain.length} day(s) of runs`);
       }
       if (runsToDelete.length > 0) {
         core.info(`🚀 Deleting ${runsToDelete.length} run(s)`);
