@@ -2,6 +2,7 @@
 const core = require("@actions/core");
 const { Octokit } = require("@octokit/rest");
 const { throttling } = require("@octokit/plugin-throttling");
+const { retry } = require("@octokit/plugin-retry");
 /**
  * Convert input string to boolean.
  * - Treats empty / undefined input as false.
@@ -183,7 +184,9 @@ async function run() {
     const checkBranchExistence = parseBoolean(core.getInput("check_branch_existence"));
     const checkPullRequestExist = parseBoolean(core.getInput("check_pullrequest_exist"));
     // ---------------------- 2. Initialize Octokit Client ----------------------
-    const MyOctokit = Octokit.plugin(throttling);
+    // throttling handles rate limits; retry handles transient server (5xx) and
+    // network errors so a single blip mid-enumeration doesn't fail the whole run.
+    const MyOctokit = Octokit.plugin(throttling, retry);
     const octokit = new MyOctokit({
       auth: token,
       baseUrl,
