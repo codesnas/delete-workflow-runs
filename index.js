@@ -1,8 +1,8 @@
 "use strict";
-const core = require("@actions/core");
-const { Octokit } = require("@octokit/rest");
-const { throttling } = require("@octokit/plugin-throttling");
-const { retry } = require("@octokit/plugin-retry");
+import * as core from "@actions/core";
+import { Octokit } from "@octokit/rest";
+import { throttling } from "@octokit/plugin-throttling";
+import { retry } from "@octokit/plugin-retry";
 /**
  * Convert input string to boolean.
  * - Treats empty / undefined input as false.
